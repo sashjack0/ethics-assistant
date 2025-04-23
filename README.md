@@ -82,13 +82,18 @@ streamlit run ui/streamlit_ui.py
 ```bash
 ethics-assistant/
 ├── app/
-│   └── ethics_bot.py         # Core GPT logic
-├── ui/
-│   └── streamlit_ui.py       # Streamlit frontend
+│   ├── __init__.py
+│   └── ethics_bot.py
 ├── test/
-│   └── test_ethics_bot.py    # Placeholder for unit tests
-├── .env                      # Your API key (not committed)
+│   └── test_ethics_bot.py
+├── ui/
+│   └── streamlit_ui.py
+├── assets/
+│   ├── input_ui.png
+│   └── output_response.png
+├── .env                  # Not pushed to GitHub (added to .gitignore)
 ├── .gitignore
+├── LICENSE
 ├── README.md
 ├── requirements.txt
 ```
