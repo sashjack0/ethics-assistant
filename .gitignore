@@ -172,3 +172,15 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+# VSCode
+.vscode/
+
+# Local test log/output artifacts (if you log test results)
+*.log
+*.tmp
+*.out
+__pycache__/
+*.pyc
+.env
+venv/
+.DS_Store
