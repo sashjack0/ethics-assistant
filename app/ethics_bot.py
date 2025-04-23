@@ -1,24 +1,32 @@
 # app/ethics_bot.py
 
-# Ethics & Bias Review Assistant (Modular Version)
-# This module simulates a GPT-based assistant for ethical reflection in AI projects
+import os
+from dotenv import load_dotenv
+from openai import OpenAI
 
-def run_ethics_bot(project_desc):
-    if not project_desc.strip():
-        return "[Guiding Questions]\n- Please provide a description of your project so I can help identify ethical considerations."
+# Load environment variables
+load_dotenv()
 
-    # Simulated response for demonstration
-    return f"""
-[Guiding Questions]
-- What kind of data are you collecting, and is it representative of all affected groups?
-- Could this project introduce bias against certain populations?
-- Are users aware their data is being used in this way?
-- What social impact might result from incorrect predictions?
-- Is there a feedback loop to mitigate negative outcomes?
+# Initialize OpenAI client (v1.x compatible)
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-[Fairness Concerns]
-There may be risks related to fairness or exclusion, especially if sensitive attributes like demographics are involved.
+def run_ethics_bot(project_description):
+    # Basic input validation
+    if not project_description or len(project_description.strip()) < 10:
+        return "⚠️ Please enter a meaningful project description with at least 10 characters."
+    if all(char in "!@#$%^&*()_+-=<>?/.,;:'\"[]{}|" for char in project_description.strip()):
+        return "⚠️ Input appears to contain only symbols. Please provide a meaningful description."
 
-[Reflection Prompt]
-Please consider conducting a deeper fairness audit or consulting an ethics panel during development.
-"""
+    try:
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are an expert in AI ethics and fairness reviews. When given a project description, assess potential risks around:\n\n- Fairness and bias\n- Data privacy\n- User consent and transparency\n- Legal or regulatory compliance (e.g., GDPR, CCPA)\n\nRespond clearly with numbered points, actionable insights, and a professional tone. Avoid repetition. Be precise but not overly verbose."},
+                {"role": "user", "content": project_description}
+            ],
+            temperature=0.5,
+            max_tokens=500,
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"❌ Error while contacting OpenAI: {str(e)}"
