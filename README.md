@@ -19,9 +19,14 @@
 
 ---
 
-## 📷 Screenshot
 
-![Demo Screenshot](path-to-your-local-screenshot.png)
+## 📸 Screenshots
+
+### 1. User enters a project description
+![Input UI](./assets/input_ui.png)
+
+### 2. Assistant provides ethical and fairness analysis
+![Output UI](./assets/output_response.png)
 
 ---
 
