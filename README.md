@@ -111,7 +111,7 @@ ethics-assistant/
 ## 👨‍💼 Author
 
 **Sachin Bhandary**  
-*Prompt Engineer & AI Tool Developer*  
+*AI Engineer*  
 GitHub: [@sashjack0](https://github.com/sashjack0)
 
 ---
@@ -119,4 +119,5 @@ GitHub: [@sashjack0](https://github.com/sashjack0)
 ## 📄 License
 
 [MIT License](LICENSE)
+
 
