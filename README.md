@@ -63,12 +63,6 @@ streamlit run ui/streamlit_ui.py
 
 ---
 
-## 🌐 Live Demo (Optional)
-
-> [Click here to try it on Streamlit Cloud](https://your-streamlit-app-url.streamlit.app)
-
----
-
 ## 🔐 Security & Secrets
 
 - API keys are stored in `.env` (gitignored)
