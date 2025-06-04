@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+    env_file:
+      - .env.local
+    environment:
+      - ENV=local
+      - DEBUG=true
+    command: streamlit run ui/streamlit_ui.py --server.port=8501 --server.address=0.0.0.0
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    env_file:
+      - .env.test
+    environment:
+      - ENV=test
+      - DEBUG=true
+    command: pytest -v --cov=app
+
+  lint:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    command: |
+      sh -c "
+        black . --check &&
+        isort . --check-only &&
+        flake8 . &&
+        mypy app test
+      " 

@@ -1,8 +1,18 @@
 # app/ethics_bot.py
 
+"""
+Core ethics analysis module for the AI Ethics & Fairness Review Assistant.
+"""
 import os
+from typing import Optional
 from dotenv import load_dotenv
 from openai import OpenAI
+from openai.types.chat import ChatCompletion
+
+from app.config.logging_config import setup_logging
+
+# Initialize logging
+logger = setup_logging()
 
 # Load environment variables
 load_dotenv()
@@ -10,23 +20,69 @@ load_dotenv()
 # Initialize OpenAI client (v1.x compatible)
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def run_ethics_bot(project_description):
-    # Basic input validation
+def validate_input(project_description: str) -> tuple[bool, Optional[str]]:
+    """
+    Validate the project description input.
+    
+    Args:
+        project_description: The project description to validate
+        
+    Returns:
+        tuple[bool, Optional[str]]: (is_valid, error_message)
+    """
     if not project_description or len(project_description.strip()) < 10:
-        return "⚠️ Please enter a meaningful project description with at least 10 characters."
+        return False, "⚠️ Please enter a meaningful project description with at least 10 characters."
+    
     if all(char in "!@#$%^&*()_+-=<>?/.,;:'\"[]{}|" for char in project_description.strip()):
-        return "⚠️ Input appears to contain only symbols. Please provide a meaningful description."
+        return False, "⚠️ Input appears to contain only symbols. Please provide a meaningful description."
+    
+    return True, None
+
+def run_ethics_bot(project_description: str) -> str:
+    """
+    Analyze a project description for ethical implications using GPT-3.5.
+    
+    Args:
+        project_description: The project description to analyze
+        
+    Returns:
+        str: The ethical analysis response or error message
+    """
+    logger.info("Starting ethics analysis for project description")
+    
+    # Validate input
+    is_valid, error_message = validate_input(project_description)
+    if not is_valid:
+        logger.warning(f"Invalid input: {error_message}")
+        return error_message
 
     try:
-        response = client.chat.completions.create(
+        logger.debug("Sending request to OpenAI API")
+        response: ChatCompletion = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are an expert in AI ethics and fairness reviews. When given a project description, assess potential risks around:\n\n- Fairness and bias\n- Data privacy\n- User consent and transparency\n- Legal or regulatory compliance (e.g., GDPR, CCPA)\n\nRespond clearly with numbered points, actionable insights, and a professional tone. Avoid repetition. Be precise but not overly verbose."},
+                {
+                    "role": "system",
+                    "content": """You are an expert in AI ethics and fairness reviews. When given a project description, assess potential risks around:
+
+- Fairness and bias
+- Data privacy
+- User consent and transparency
+- Legal or regulatory compliance (e.g., GDPR, CCPA)
+
+Respond clearly with numbered points, actionable insights, and a professional tone. Avoid repetition. Be precise but not overly verbose."""
+                },
                 {"role": "user", "content": project_description}
             ],
             temperature=0.5,
             max_tokens=500,
         )
-        return response.choices[0].message.content
+        
+        result = response.choices[0].message.content
+        logger.info("Successfully received analysis from OpenAI")
+        return result
+        
     except Exception as e:
-        return f"❌ Error while contacting OpenAI: {str(e)}"
+        error_msg = f"❌ Error while contacting OpenAI: {str(e)}"
+        logger.error(error_msg, exc_info=True)
+        return error_msg
