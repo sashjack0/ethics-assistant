@@ -6,7 +6,7 @@ Core ethics analysis module for the AI Ethics & Fairness Review Assistant.
 import os
 from typing import Optional
 from dotenv import load_dotenv
-from openai import OpenAI
+from openai import OpenAI, APIError, APIConnectionError, RateLimitError
 from openai.types.chat import ChatCompletion
 
 from app.config.logging_config import setup_logging
@@ -17,8 +17,11 @@ logger = setup_logging()
 # Load environment variables
 load_dotenv()
 
-# Initialize OpenAI client (v1.x compatible)
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Initialize OpenAI client with validation
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    raise EnvironmentError("OPENAI_API_KEY is missing in the environment.")
+client = OpenAI(api_key=api_key)
 
 def validate_input(project_description: str) -> tuple[bool, Optional[str]]:
     """
@@ -38,7 +41,7 @@ def validate_input(project_description: str) -> tuple[bool, Optional[str]]:
     
     return True, None
 
-def run_ethics_bot(project_description: str) -> str:
+def run_ethics_bot(project_description: str) -> Optional[str]:
     """
     Analyze a project description for ethical implications using GPT-3.5.
     
@@ -46,7 +49,7 @@ def run_ethics_bot(project_description: str) -> str:
         project_description: The project description to analyze
         
     Returns:
-        str: The ethical analysis response or error message
+        Optional[str]: The ethical analysis response or error message, None if processing fails
     """
     logger.info("Starting ethics analysis for project description")
     
@@ -82,7 +85,11 @@ Respond clearly with numbered points, actionable insights, and a professional to
         logger.info("Successfully received analysis from OpenAI")
         return result
         
+    except (APIError, APIConnectionError, RateLimitError) as e:
+        error_msg = f"❌ OpenAI API Error: {str(e)}"
+        logger.error(error_msg, exc_info=True)
+        return error_msg
     except Exception as e:
-        error_msg = f"❌ Error while contacting OpenAI: {str(e)}"
+        error_msg = f"❌ Unexpected error: {str(e)}"
         logger.error(error_msg, exc_info=True)
         return error_msg
